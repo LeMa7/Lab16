@@ -9,6 +9,46 @@ using System.Threading.Tasks;
 
 namespace Lab16
 {
+
+    class Customer
+    {
+        public async Task TakeFromStore(BlockingCollection<string> bc)
+        {
+            Random rand = new Random();
+            if (bc.Count == 0)
+            {
+                Console.WriteLine("Склад пуст, соре");
+                Thread.Sleep(rand.Next(1000));
+            }
+            else
+            {
+                bc.Take();
+                Console.WriteLine("Товар взят со склада.");
+                Thread.Sleep(rand.Next(1000));
+            }
+        }
+    }
+    class Provider
+    {
+        public string thing;
+        public int timing;
+        public Provider(string s, int i)
+        {
+            thing = s;
+            timing = i;
+        }
+        public async Task AddToStore(BlockingCollection<string> bc)
+        {
+            await Task.Run(() =>
+            {
+                bc.Add(this.thing);
+                Console.WriteLine("Добавлен товар: " + thing);
+                Thread.Sleep(timing);
+            });
+
+        }
+    }
+
     class Program
     {
         static void Algorithm(int a,int b)
@@ -193,6 +233,42 @@ namespace Lab16
             Parallel.Invoke(() => Algorithm(20,255), () => Display(algorithmTask));
             Console.ReadKey();
 
+            Console.WriteLine("\nСедимое задание:");
+            BlockingCollection<string> bc = new BlockingCollection<string>(20);
+            Provider p1 = new Provider("Пылесос", 10);
+            Provider p2 = new Provider("Магнитофон", 300);
+            Provider p3 = new Provider("Микроволновка", 500);
+            Provider p4 = new Provider("Холодильник", 700);
+            Provider p5 = new Provider("Телевизор", 900);
+            Customer c1 = new Customer(); Customer c2 = new Customer(); Customer c3 = new Customer(); Customer c4 = new Customer(); Customer c5 = new Customer();
+            Customer c6 = new Customer(); Customer c7 = new Customer(); Customer c8 = new Customer(); Customer c9 = new Customer(); Customer c10 = new Customer();
+            Customer[] carr = { c1, c2, c3, c4, c5, c6, c7, c8, c9, c10 };
+            Task bcTask = Task.Run(async () =>
+            {
+                while (bc.Count != bc.BoundedCapacity)
+                {
+                    Parallel.Invoke(
+                        () => p1.AddToStore(bc),
+                        () => p2.AddToStore(bc),
+                        () => p3.AddToStore(bc),
+                        () => p4.AddToStore(bc),
+                        () => p5.AddToStore(bc),
+                        () => c1.TakeFromStore(bc),
+                        () => c2.TakeFromStore(bc),
+                        () => c3.TakeFromStore(bc),
+                        () => c4.TakeFromStore(bc),
+                        () => c5.TakeFromStore(bc),
+                        () => c6.TakeFromStore(bc),
+                        () => c7.TakeFromStore(bc),
+                        () => c8.TakeFromStore(bc),
+                        () => c9.TakeFromStore(bc),
+                        () => c10.TakeFromStore(bc)
+                        );
+                }
+                Console.WriteLine("Склад полон");
+            });
+            Console.Write("\n\n");
+            Console.ReadKey();
 
             Console.WriteLine("\nВосьмое задание:");
             AsyncMethod();
